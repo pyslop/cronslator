@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 import sys
 from io import StringIO
-from cronslator.cli import main
+from pyslop.cronslator.cli import main
 
 
 def test_cli_single_quoted_argument():

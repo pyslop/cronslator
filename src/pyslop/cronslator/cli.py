@@ -1,5 +1,5 @@
 import sys
-from .cronslator import cronslate
+from pyslop.cronslator import cronslate
 
 
 def print_usage():

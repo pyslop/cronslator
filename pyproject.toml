@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "cronslator"
+name = "pyslop-cronslator"
 version = "0.2.0"
 description = "Natural Language to Cron"
 authors = ["Harshad Sharma <harshad@sharma.io>"]
 readme = "README.md"
-packages = [{ include = "cronslator", from = "src" }]
+packages = [{ include = "pyslop", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -13,7 +13,7 @@ python = "^3.9"
 pytest = "^8.3.4"
 
 [tool.poetry.scripts]
-cronslate = "cronslator.cli:main"
+cronslate = "pyslop.cronslator.cli:main"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,5 +1,5 @@
 import pytest
-from cronslator import cronslate
+from pyslop.cronslator import cronslate
 
 
 @pytest.mark.parametrize(
