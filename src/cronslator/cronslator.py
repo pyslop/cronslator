@@ -43,6 +43,39 @@ class TimeParser:
         "4th": 4,
         "fifth": 5,
         "5th": 5,
+        "sixth": 6,
+        "6th": 6,
+        "seventh": 7,
+        "7th": 7,
+        "eighth": 8,
+        "8th": 8,
+        "ninth": 9,
+        "9th": 9,
+        "tenth": 10,
+        "10th": 10,
+    }
+
+    NUMBERS = {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+        "ten": 10,
+        "eleven": 11,
+        "twelve": 12,
+        "thirteen": 13,
+        "fourteen": 14,
+        "fifteen": 15,
+        "sixteen": 16,
+        "seventeen": 17,
+        "eighteen": 18,
+        "nineteen": 19,
+        "twenty": 20,
     }
 
     @staticmethod
@@ -303,7 +336,7 @@ def cronslate(description: str) -> str:
 
     # Handle every Nth day pattern (add this before monthly patterns)
     nth_day_match = re.search(
-        r"(?:every\s+)?(\d+|fourth|third|second|first)(?:st|nd|rd|th)?\s+day",
+        r"(?:every\s+)?(\d+|fourth?|third?|second?|first|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:days?|day)",
         description,
         re.IGNORECASE,
     )
@@ -311,6 +344,10 @@ def cronslate(description: str) -> str:
         interval = nth_day_match.group(1)
         if interval in TimeParser.ORDINALS:
             interval = str(TimeParser.ORDINALS[interval.lower()])
+        elif interval in TimeParser.NUMBERS:
+            interval = str(TimeParser.NUMBERS[interval.lower()])
+        elif interval.lower().rstrip("s") in TimeParser.NUMBERS:
+            interval = str(TimeParser.NUMBERS[interval.lower().rstrip("s")])
         if 1 <= int(interval) <= 31:
             components.day_of_month = f"*/{interval}"
         else:
