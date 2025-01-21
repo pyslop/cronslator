@@ -20,6 +20,84 @@ and either are fine.
 Beyond this line, there is no human written text or code,
 it is all LLM generated slop (hence the org name pyslop!).
 
+## Installation
+
+Install from PyPI using pipx (recommended):
+
+```bash
+# Install pipx if you haven't already
+python -m pip install --user pipx
+python -m pipx ensurepath
+
+# Install from PyPI
+pipx install pyslop-cronslator
+
+# Or install from TestPyPI
+pipx install --pip-args="--index-url https://test.pypi.org/simple/ --no-deps" pyslop-cronslator
+```
+
+Or install from PyPI using pip:
+
+```bash
+pip install pyslop-cronslator
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/pyslop/cronslator.git
+cd cronslator
+pip install .
+```
+
+## Development
+
+Clone and set up development environment:
+
+```bash
+# Clone the repository
+git clone https://github.com/pyslop/cronslator.git
+cd cronslator
+
+# Install poetry if you haven't already
+pip install poetry
+
+# Install dependencies and development dependencies
+poetry install
+
+# Run tests
+poetry run pytest
+
+# Run specific test file
+poetry run pytest tests/test_readme_examples.py
+```
+
+### Publishing to PyPI
+
+For maintainers, to publish a new version:
+
+```bash
+# Update version in pyproject.toml first, then:
+
+# Build the package
+poetry build
+
+# Configure TestPyPI repository (one-time setup)
+poetry config repositories.testpypi https://test.pypi.org/legacy/
+
+# Publish to TestPyPI first (requires TestPyPI credentials)
+poetry publish -r testpypi
+
+# Test the package from TestPyPI
+pip install --index-url https://test.pypi.org/simple/ --no-deps pyslop-cronslator
+
+# If everything looks good, publish to PyPI (requires PyPI credentials)
+poetry publish
+
+# Or do both build and publish in one step
+poetry publish --build
+```
+
 ## Understanding Cron Format
 
 The cron expressions generated follow the standard 5-field format:
