@@ -4,6 +4,22 @@
 
 A Python 3.9+ library to convert an English string to cron schedule.
 
+## Important
+
+> This is not the library you are looking for!
+
+This codebase was generated entirely from prompting
+GitHub Copilot (Clause 3.5 Sonnet) and has not been
+audited, verified or even assumed to be correct.
+
+This is an experiment to tinker with new shiny tools,
+and to share what's possible using them -
+your takeaway could be "Wow, that's nice!" or "Wow, that's crap!"
+and either are fine.
+
+Beyond this line, there is no human written text or code,
+it is all LLM generated slop (hence the org name pyslop!).
+
 ## Understanding Cron Format
 
 The cron expressions generated follow the standard 5-field format:
