@@ -382,6 +382,11 @@ def cronslate(description: str) -> str:
         )
         components.day_of_week = weekday
 
+        # Add default time if not specified
+        if components.minute == "*" and components.hour == "*":
+            components.minute = "0"
+            components.hour = "0"
+
     # Handle monthly patterns
     if "last day" in description:
         components.day_of_month = "L"

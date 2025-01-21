@@ -39,6 +39,8 @@ def test_complex_time_schedules(description, expected):
         ("3rd day of every month at 1:30am", "30 1 3 * *"),
         ("Monthly on the 15th at noon", "0 12 15 * *"),
         ("Last day of month at 11:59 PM", "59 23 L * *"),
+        ("Every second Sunday", "0 0 8-14 * 0"),  # Add this test case
+        ("Every second Sunday at 2pm", "0 14 8-14 * 0"),  # And this variation
     ],
 )
 def test_monthly_schedules(description, expected):
