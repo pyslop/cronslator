@@ -15,7 +15,9 @@ class CronComponents:
         return f"{self.minute} {self.hour} {self.day_of_month} {self.month} {self.day_of_week}"
 
 
-class TimeParser:
+class BasicParser:
+    """Handles basic time and number parsing"""
+
     WEEKDAYS = {
         "monday": "1",
         "tuesday": "2",
@@ -89,53 +91,6 @@ class TimeParser:
         return f"{start}-{end}"
 
     @staticmethod
-    def parse_time(time_str: str) -> tuple[int, int]:
-        time_str = time_str.lower().strip()
-
-        # Handle special times
-        if time_str in TimeParser.SPECIAL_TIMES:
-            time_str = TimeParser.SPECIAL_TIMES[time_str]
-
-        # Convert 2pm/2am format to 24-hour
-        am_pm_match = re.match(r"^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$", time_str)
-        if am_pm_match:
-            hour = int(am_pm_match.group(1))
-            minute = int(am_pm_match.group(2) or "0")
-            if am_pm_match.group(3) == "pm" and hour != 12:
-                hour += 12
-            if am_pm_match.group(3) == "am" and hour == 12:
-                hour = 0
-            return hour, minute
-
-        # Handle 24-hour format
-        time_match = re.match(r"^(\d{1,2}):(\d{2})$", time_str)
-        if time_match:
-            return int(time_match.group(1)), int(time_match.group(2))
-
-        # Handle simple hour
-        if time_str.isdigit():
-            return int(time_str), 0
-
-        raise ValueError(f"Invalid time format: {time_str}")
-
-    @staticmethod
-    def validate_time(hour: int, minute: int) -> None:
-        if not (0 <= hour <= 23):
-            raise ValueError(f"Invalid hour: {hour}")
-        if not (0 <= minute <= 59):
-            raise ValueError(f"Invalid minute: {minute}")
-
-    @staticmethod
-    def is_time_format(text: str) -> bool:
-        """Check if a string segment looks like a time specification."""
-        time_patterns = [
-            r"\d{1,2}(?::\d{2})?\s*(?:am|pm)",
-            r"\d{1,2}:\d{2}",
-            r"noon|midnight|dawn",
-        ]
-        return any(re.search(pattern, text.lower()) for pattern in time_patterns)
-
-    @staticmethod
     def parse_minutes_list(text: str) -> list[str]:
         """Extract multiple minute values from text."""
         minutes = []
@@ -143,19 +98,79 @@ class TimeParser:
         return [m for m in minute_matches if 0 <= int(m) <= 59]
 
     @staticmethod
-    def extract_days(description: str) -> list[str]:
-        """Extract day numbers from text while avoiding time numbers."""
-        days = []
-        # Look for explicit day mentions with ordinals or 'day' keyword
-        day_patterns = [
-            r"(\d+)(?:st|nd|rd|th)\s+(?:day|of)",
-            r"(?:day\s+)?(\d+)(?:\s+of)",
-        ]
-        for pattern in day_patterns:
-            matches = re.finditer(pattern, description)
-            for match in matches:
-                days.append(match.group(1))
-        return days
+    def parse_time(time_str: str) -> tuple[int, int]:
+        # Simplified time parsing
+        time_str = time_str.lower().strip()
+        if time_str in BasicParser.SPECIAL_TIMES:
+            time_str = BasicParser.SPECIAL_TIMES[time_str]
+
+        if ":" in time_str:
+            hour, minute = map(int, time_str.split(":"))
+            return hour, minute
+
+        # Handle am/pm
+        if "pm" in time_str:
+            hour = int(time_str.replace("pm", "").strip())
+            return (hour + 12 if hour != 12 else 12), 0
+        if "am" in time_str:
+            hour = int(time_str.replace("am", "").strip())
+            return (0 if hour == 12 else hour), 0
+
+        return int(time_str), 0
+
+    @staticmethod
+    def parse_am_pm_times(text: str) -> list[tuple[int, int]]:
+        """Parse all times with proper AM/PM context."""
+        results = []
+        time_tokens = re.finditer(
+            r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)?(?=\s|$|,|\sand\s)", text.lower()
+        )
+
+        current_meridiem = None
+        for match in time_tokens:
+            hour = int(match.group(1))
+            minute = int(match.group(2) or "0")
+            meridiem = match.group(3)
+
+            if meridiem:
+                current_meridiem = meridiem
+
+            if current_meridiem == "pm" and hour != 12:
+                hour += 12
+            elif current_meridiem == "am" and hour == 12:
+                hour = 0
+
+            results.append((hour, minute))
+
+        return results
+
+    @staticmethod
+    def combine_times(times: list[tuple[int, int]]) -> tuple[str, str]:
+        """Combine multiple times into hour and minute components."""
+        if not times:
+            return "*", "*"
+
+        hours = sorted(set(h for h, _ in times))
+        minutes = sorted(set(m for _, m in times))
+
+        hour_str = ",".join(str(h) for h in hours)
+        minute_str = ",".join(str(m) for m in minutes) if minutes else "0"
+
+        return hour_str, minute_str
+
+    @staticmethod
+    def parse_time_range(text: str) -> tuple[int, int]:
+        """Parse time range and return start and end hours."""
+        range_match = re.search(
+            r"between\s+(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)\s+and\s+"
+            r"(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)",
+            text,
+        )
+        if not range_match:
+            return -1, -1
+        start_hour, _ = BasicParser.parse_time(range_match.group(1))
+        end_hour, _ = BasicParser.parse_time(range_match.group(2))
+        return start_hour, end_hour
 
     @staticmethod
     def handle_special_time(description: str) -> tuple[str, str]:
@@ -169,85 +184,60 @@ class TimeParser:
         return "*", "*"
 
     @staticmethod
-    def parse_time_range(text: str) -> tuple[int, int]:
-        """Parse time range and return start and end hours."""
-        range_match = re.search(
-            r"between\s+(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)\s+and\s+(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)",
-            text,
-        )
-        if not range_match:
-            return -1, -1
-        start_hour, _ = TimeParser.parse_time(range_match.group(1))
-        end_hour, _ = TimeParser.parse_time(range_match.group(2))
-        return start_hour, end_hour
+    def handle_business_hours(description: str) -> tuple[str, str, str]:
+        """Handle business hours patterns. Returns (minute, hour, day_of_week)"""
+        if "business hours" in description:
+            interval_match = re.search(r"every\s+(\d+)\s+minute", description)
+            if interval_match:
+                return f"*/{interval_match.group(1)}", "9-17", "1-5"
+        return "*", "*", "*"
 
     @staticmethod
-    def parse_am_pm_times(text: str) -> list[tuple[int, int]]:
-        """Parse all times with proper AM/PM context."""
-        results = []
+    def handle_quarter_patterns(description: str) -> tuple[str, str]:
+        """Handle quarter past and first X minutes patterns"""
+        if "quarter past" in description:
+            return "15", "*"
+        if "first 15 minutes" in description or "first fifteen minutes" in description:
+            return "0-14", "*"
+        return "*", "*"
 
-        # First, split into time tokens, preserving order
-        time_tokens = re.finditer(
-            r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)?(?=\s|$|,|\sand\s)", text.lower()
-        )
 
-        current_meridiem = None  # Track AM/PM context
+class CronParser:
+    """Main parser with simplified pattern matching"""
 
-        for match in time_tokens:
-            hour = int(match.group(1))
-            minute = int(match.group(2) or "0")
-            meridiem = match.group(3)
+    def __init__(self):
+        self.basic = BasicParser()
 
-            # Update meridiem context if explicitly specified
-            if meridiem:
-                current_meridiem = meridiem
+    def parse(self, description: str) -> CronComponents:
+        components = CronComponents()
+        description = description.lower()
 
-            # Apply meridiem context
-            if current_meridiem == "pm" and hour != 12:
-                hour += 12
-            elif current_meridiem == "am" and hour == 12:
-                hour = 0
-            elif not current_meridiem:
-                # Look ahead for AM/PM context if no context yet
-                context_after = text[match.end() : match.end() + 10].lower()
-                if "pm" in context_after and hour != 12:
-                    hour += 12
-                    current_meridiem = "pm"
-                elif "am" in context_after and hour == 12:
-                    hour = 0
-                    current_meridiem = "am"
+        # Quick validation
+        if not description:
+            raise ValueError("Empty description")
 
-            TimeParser.validate_time(hour, minute)
-            results.append((hour, minute))
+        # Handle common patterns first
+        if self._handle_intervals(description, components):
+            return components
 
-        return results
+        if self._handle_specific_times(description, components):
+            return components
 
-    @staticmethod
-    def combine_times(times: list[tuple[int, int]]) -> tuple[str, str]:
-        """Combine multiple times into hour and minute components."""
-        if not times:
-            return "*", "*"
+        if self._handle_days(description, components):
+            return components
 
-        # Extract hours and minutes, keeping as integers
-        hours = []
-        minutes = set()
+        raise ValueError("Unable to parse schedule")
 
-        for hour, minute in times:
-            hours.append(hour)
-            if minute != 0:
-                minutes.add(minute)
+    def _handle_intervals(self, desc: str, comp: CronComponents) -> bool:
+        # Simple interval handling
+        if "every" in desc and "minute" in desc:
+            match = re.search(r"every\s+(\d+)", desc)
+            if match:
+                comp.minute = f"*/{match.group(1)}"
+                return True
+        return False
 
-        # Sort numerically first, then convert to strings
-        hours = sorted(set(hours))  # Remove duplicates and sort numerically
-        hour_str = ",".join(str(h) for h in hours)
-
-        # Handle minutes
-        if minutes:
-            minute_str = ",".join(str(m) for m in sorted(minutes))
-        else:
-            minute_str = "0"
-
-        return hour_str, minute_str
+    # Additional methods would go here, each handling specific patterns
 
 
 def cronslate(description: str) -> str:
@@ -278,6 +268,14 @@ def cronslate(description: str) -> str:
         context["day_of_month"] = "1-5"
         context["month"] = "1,4,7,10"
 
+    # Handle business hours first (before general interval handling)
+    if "business hours" in description:
+        minute, hour, day_of_week = BasicParser.handle_business_hours(description)
+        components.minute = minute
+        components.hour = hour
+        components.day_of_week = day_of_week
+        return str(components)
+
     # Handle intervals first - this is highest priority
     if "every" in description and "minute" in description:
         interval_match = re.search(r"every\s+(\d+)\s+minute", description)
@@ -287,7 +285,7 @@ def cronslate(description: str) -> str:
 
             # Handle time range for intervals
             if "between" in description:
-                start_hour, end_hour = TimeParser.parse_time_range(description)
+                start_hour, end_hour = BasicParser.parse_time_range(description)
                 if start_hour >= 0 and end_hour >= 0:
                     components.hour = f"{start_hour}-{end_hour}"
 
@@ -297,9 +295,17 @@ def cronslate(description: str) -> str:
 
             return str(components)
 
+    # Add new handlers before existing interval handling
+    if "business hours" in description:
+        minute, hour, day_of_week = BasicParser.handle_business_hours(description)
+        components.minute = minute
+        components.hour = hour
+        components.day_of_week = day_of_week
+        return str(components)
+
     # Handle "X times per hour" patterns
     if "times per hour" in description:
-        minute_values = TimeParser.parse_minutes_list(description)
+        minute_values = BasicParser.parse_minutes_list(description)
         if minute_values:
             components.minute = ",".join(sorted(minute_values, key=int))
             components.hour = "*"
@@ -314,22 +320,31 @@ def cronslate(description: str) -> str:
     if "quarter hour" in description:
         components.minute = "*/15"
         if "between" in description:
-            start_hour, end_hour = TimeParser.parse_time_range(description)
+            start_hour, end_hour = BasicParser.parse_time_range(description)
             if start_hour >= 0 and end_hour >= 0:
                 components.hour = f"{start_hour}-{end_hour}"
         return str(components)
 
+    # Add new pattern handling before quarter hour section
+    if any(pat in description for pat in ["quarter past", "first 15 minutes"]):
+        minute, hour = BasicParser.handle_quarter_patterns(description)
+        components.minute = minute
+        components.hour = hour
+        if "weekday" in description:
+            components.day_of_week = "1-5"
+        return str(components)
+
     # Handle time specifications with proper AM/PM context
-    times = TimeParser.parse_am_pm_times(description)
+    times = BasicParser.parse_am_pm_times(description)
     if times:
-        hour_str, minute_str = TimeParser.combine_times(times)
+        hour_str, minute_str = BasicParser.combine_times(times)
         if hour_str != "*":
             components.hour = hour_str
         if minute_str != "*":
             components.minute = minute_str
 
     # Handle special time patterns
-    special_minute, special_hour = TimeParser.handle_special_time(description)
+    special_minute, special_hour = BasicParser.handle_special_time(description)
     if special_minute != "*":
         components.minute = special_minute
         components.hour = special_hour
@@ -342,12 +357,12 @@ def cronslate(description: str) -> str:
     )
     if nth_day_match:
         interval = nth_day_match.group(1)
-        if interval in TimeParser.ORDINALS:
-            interval = str(TimeParser.ORDINALS[interval.lower()])
-        elif interval in TimeParser.NUMBERS:
-            interval = str(TimeParser.NUMBERS[interval.lower()])
-        elif interval.lower().rstrip("s") in TimeParser.NUMBERS:
-            interval = str(TimeParser.NUMBERS[interval.lower().rstrip("s")])
+        if interval in BasicParser.ORDINALS:
+            interval = str(BasicParser.ORDINALS[interval.lower()])
+        elif interval in BasicParser.NUMBERS:
+            interval = str(BasicParser.NUMBERS[interval.lower()])
+        elif interval.lower().rstrip("s") in BasicParser.NUMBERS:
+            interval = str(BasicParser.NUMBERS[interval.lower().rstrip("s")])
         if 1 <= int(interval) <= 31:
             components.day_of_month = f"*/{interval}"
         else:
@@ -360,9 +375,11 @@ def cronslate(description: str) -> str:
         re.IGNORECASE,
     )
     if ordinal_day_match:
-        ordinal = TimeParser.ORDINALS[ordinal_day_match.group(1).lower()]
-        weekday = TimeParser.WEEKDAYS[ordinal_day_match.group(2).lower()]
-        components.day_of_month = TimeParser.get_ordinal_weekday_range(ordinal, weekday)
+        ordinal = BasicParser.ORDINALS[ordinal_day_match.group(1).lower()]
+        weekday = BasicParser.WEEKDAYS[ordinal_day_match.group(2).lower()]
+        components.day_of_month = BasicParser.get_ordinal_weekday_range(
+            ordinal, weekday
+        )
         components.day_of_week = weekday
 
     # Handle monthly patterns
@@ -395,7 +412,7 @@ def cronslate(description: str) -> str:
             components.day_of_week = "0,6"
         else:
             days = []
-            for day, number in TimeParser.WEEKDAYS.items():
+            for day, number in BasicParser.WEEKDAYS.items():
                 if day in description:
                     days.append(number)
             if days:

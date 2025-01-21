@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cronslator"
-version = "0.1.0"
+version = "0.2.0"
 description = "Natural Language to Cron"
 authors = ["Harshad Sharma <harshad@sharma.io>"]
 readme = "README.md"

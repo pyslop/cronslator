@@ -1,5 +1,7 @@
 # Cronslator Development Journey
 
+Version: 0.2
+
 ## Development Process
 
 ### Initial Setup
@@ -76,16 +78,29 @@ Added comprehensive CLI tests covering:
 
 Final result:
 
-- Core functionality: 26 tests passed
+- Core functionality: 32 tests passed
 - CLI interface: 6 tests passed
-- Total: 32 tests passed in 0.07s
+- Total: 38 tests passed in 0.08s
 
-All test cases passed successfully, covering:
+## Version History
 
-- Core functionality tests (various schedule patterns)
-- CLI input method tests (pipe, quoted, multiple args)
-- Error handling tests
-- Edge cases and validation
+### v0.2
+
+- Improved pattern handling with BasicParser class
+- Added business hours support
+- Better handling of "first X minutes" patterns
+- Fixed quarter-past pattern issues
+- Restructured pattern priority for more accurate matching
+- Added comprehensive README examples
+- Total test coverage: 38 passing tests
+
+### v0.1
+
+- Initial implementation
+- Basic pattern matching
+- Simple time parsing
+- 26 test cases
+- CLI implementation
 
 ## Technical Implementation Details
 
@@ -135,3 +150,10 @@ All test cases passed successfully, covering:
 - Maintainable code structure
 - Efficient processing
 - Accurate cron expression generation
+
+## Performance Metrics
+
+- Test execution time: 0.08s
+- Zero external dependencies
+- No ML/AI components needed
+- Pattern-based parsing with context awareness

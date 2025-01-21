@@ -88,3 +88,16 @@ def test_case_insensitivity():
 )
 def test_advanced_schedules(description, expected):
     assert cronslate(description) == expected
+
+
+@pytest.mark.parametrize(
+    "description,expected",
+    [
+        # Add missing examples from README
+        ("Every 5 minutes during business hours", "*/5 9-17 * * 1-5"),
+        ("Weekdays at quarter past each hour", "15 * * * 1-5"),
+        ("Once per hour in the first 15 minutes", "0-14 * * * *"),
+    ],
+)
+def test_additional_schedules(description, expected):
+    assert cronslate(description) == expected
