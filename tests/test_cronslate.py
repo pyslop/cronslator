@@ -10,6 +10,7 @@ from cronslator import cronslate
         ("Every 15 minutes", "*/15 * * * *"),
         ("First day of every month at midnight", "0 0 1 * *"),
         ("Every Sunday at 4:30 PM", "30 16 * * 0"),
+        ("Every fourth day at noon", "0 12 */4 * *"),
     ],
 )
 def test_basic_schedules(description, expected):

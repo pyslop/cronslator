@@ -301,6 +301,21 @@ def cronslate(description: str) -> str:
         components.minute = special_minute
         components.hour = special_hour
 
+    # Handle every Nth day pattern (add this before monthly patterns)
+    nth_day_match = re.search(
+        r"(?:every\s+)?(\d+|fourth|third|second|first)(?:st|nd|rd|th)?\s+day",
+        description,
+        re.IGNORECASE,
+    )
+    if nth_day_match:
+        interval = nth_day_match.group(1)
+        if interval in TimeParser.ORDINALS:
+            interval = str(TimeParser.ORDINALS[interval.lower()])
+        if 1 <= int(interval) <= 31:
+            components.day_of_month = f"*/{interval}"
+        else:
+            raise ValueError(f"Invalid day interval: {interval}")
+
     # Add before other monthly patterns
     ordinal_day_match = re.search(
         r"(first|second|third|fourth|fifth)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)",
