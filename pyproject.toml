@@ -9,9 +9,11 @@ packages = [{ include = "cronslator", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.9"
 
-
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
+
+[tool.poetry.scripts]
+cronslate = "cronslator.cli:main"
 
 [build-system]
 requires = ["poetry-core"]

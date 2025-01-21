@@ -51,6 +51,42 @@ test_multiple_time_schedules[Every weekday at 9am, 1pm and 5pm-0 9,13,17 * * 1-5
 
 Final result: `26 passed in 0.03s`
 
+### CLI Implementation
+
+**Prompt**: "Create cli.py such that it can be called from shell by piping text into it, or passing as a single quoted argument, or a bunch of arguments typed after the name of the cli cronslate"
+
+Implemented flexible CLI with:
+
+- Support for piped input
+- Single quoted argument
+- Multiple arguments
+- Proper error handling
+- Usage help
+- Appropriate exit codes
+
+**Prompt**: "Let's write a few tests for our cli.py and then update the summary"
+
+Added comprehensive CLI tests covering:
+
+- Different input methods (pipe, quoted, multiple args)
+- Error handling
+- Usage display
+- Empty input handling
+- Invalid input handling
+
+Final result:
+
+- Core functionality: 26 tests passed
+- CLI interface: 6 tests passed
+- Total: 32 tests passed in 0.07s
+
+All test cases passed successfully, covering:
+
+- Core functionality tests (various schedule patterns)
+- CLI input method tests (pipe, quoted, multiple args)
+- Error handling tests
+- Edge cases and validation
+
 ## Technical Implementation Details
 
 1. **Pattern Priority System**
