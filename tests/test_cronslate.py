@@ -81,6 +81,7 @@ def test_case_insensitivity():
     [
         ("First 5 days of each quarter at dawn", "0 6 1-5 1,4,7,10 *"),
         ("Workdays at 8:45 AM except on the 13th", "45 8 1-12,14-31 * 1-5"),
+        ("Second Monday of every month at midnight", "0 0 8-14 * 1"),
     ],
 )
 def test_advanced_schedules(description, expected):

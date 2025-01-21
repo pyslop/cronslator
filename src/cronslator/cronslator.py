@@ -46,6 +46,16 @@ class TimeParser:
     }
 
     @staticmethod
+    def get_ordinal_weekday_range(ordinal: int, weekday: str) -> str:
+        """Convert ordinal weekday (e.g. 'second monday') to day range."""
+        if ordinal < 1 or ordinal > 5:
+            raise ValueError(f"Invalid ordinal: {ordinal}")
+        # Calculate the range for the ordinal occurrence
+        start = (ordinal - 1) * 7 + 1
+        end = start + 6
+        return f"{start}-{end}"
+
+    @staticmethod
     def parse_time(time_str: str) -> tuple[int, int]:
         time_str = time_str.lower().strip()
 
@@ -290,6 +300,18 @@ def cronslate(description: str) -> str:
     if special_minute != "*":
         components.minute = special_minute
         components.hour = special_hour
+
+    # Add before other monthly patterns
+    ordinal_day_match = re.search(
+        r"(first|second|third|fourth|fifth)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)",
+        description,
+        re.IGNORECASE,
+    )
+    if ordinal_day_match:
+        ordinal = TimeParser.ORDINALS[ordinal_day_match.group(1).lower()]
+        weekday = TimeParser.WEEKDAYS[ordinal_day_match.group(2).lower()]
+        components.day_of_month = TimeParser.get_ordinal_weekday_range(ordinal, weekday)
+        components.day_of_week = weekday
 
     # Handle monthly patterns
     if "last day" in description:
