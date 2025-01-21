@@ -1,2 +1,2 @@
 # cronslator
-Cron from Natural Language
+Natural Language to Cron
