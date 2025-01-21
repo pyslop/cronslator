@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cronslator"
+version = "0.1.0"
+description = "Natural Language to Cron"
+authors = ["Harshad Sharma <harshad@sharma.io>"]
+readme = "README.md"
+packages = [{ include = "cronslator", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
