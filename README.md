@@ -69,3 +69,107 @@ Examples:
 | Once per hour in the first 15 minutes | `0-14 * * * *` |
 | Workdays at 8:45 AM except on the 13th | `45 8 1-12,14-31 * 1-5` |
 | First 5 days of each quarter at dawn | `0 6 1-5 1,4,7,10 *` |
+
+## Usage
+
+### As a Command Line Tool
+
+After installation, you can use the `cronslate` command:
+
+```bash
+# Basic usage
+cronslate "Every Monday at 3am"
+# Output: 0 3 * * 1
+
+# Using quotes is optional for simple phrases
+cronslate Every Monday at 3am
+# Output: 0 3 * * 1
+
+# Pipe input from other commands
+echo "Every 15 minutes" | cronslate
+# Output: */15 * * * *
+```
+
+### As a Python Library
+
+Basic usage:
+
+```python
+from pyslop.cronslator import cronslate
+
+# Simple schedule
+result = cronslate("Every Monday at 3am")
+print(result)  # Output: 0 3 * * 1
+
+# Multiple times
+result = cronslate("Every day at 2am and 2pm")
+print(result)  # Output: 0 2,14 * * *
+
+# Complex schedules
+result = cronslate("Every 30 minutes between 9am and 5pm on weekdays")
+print(result)  # Output: */30 9-17 * * 1-5
+```
+
+Error handling:
+
+```python
+from pyslop.cronslator import cronslate
+
+try:
+    # This will raise a ValueError
+    result = cronslate("at 25:00")
+except ValueError as e:
+    print(f"Error: {e}")
+
+# Invalid inputs will raise ValueError:
+invalid_inputs = [
+    "",                      # Empty string
+    "invalid cron string",   # Nonsense input
+    "at 25:00",             # Invalid hour
+    "on day 32",            # Invalid day
+]
+
+for input_str in invalid_inputs:
+    try:
+        cronslate(input_str)
+    except ValueError as e:
+        print(f"'{input_str}' is invalid: {e}")
+```
+
+Complete script example:
+
+```python
+#!/usr/bin/env python3
+from pyslop.cronslator import cronslate
+
+def process_schedules():
+    schedules = [
+        "Every Monday at 3am",
+        "Every weekday at noon",
+        "Every 15 minutes",
+        "First day of every month at midnight",
+        "Every Sunday at 4:30 PM"
+    ]
+    
+    print("Natural Language → Cron Expression")
+    print("─" * 40)
+    
+    for schedule in schedules:
+        try:
+            cron = cronslate(schedule)
+            print(f"{schedule:<30} → {cron}")
+        except ValueError as e:
+            print(f"{schedule:<30} → Error: {e}")
+
+if __name__ == "__main__":
+    process_schedules()
+
+# Output:
+# Natural Language → Cron Expression
+# ─────────────────────────────────────────────
+# Every Monday at 3am             → 0 3 * * 1
+# Every weekday at noon          → 0 12 * * 1-5
+# Every 15 minutes               → */15 * * *
+# First day of every month...    → 0 0 1 * *
+# Every Sunday at 4:30 PM        → 30 16 * * 0
+```
