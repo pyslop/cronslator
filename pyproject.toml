@@ -1,11 +1,13 @@
 [tool.poetry]
 name = "pyslop-cronslator"
-version = "0.2.2"
+version = "0.2.3"
 description = "Natural Language to Cron"
 authors = ["Harshad Sharma <harshad@sharma.io>"]
 readme = "README.md"
 homepage = "https://github.com/pyslop/cronslator"
 packages = [{ include = "pyslop", from = "src" }]
+license = "CC0-1.0"
+keywords = ["cron", "natural language", "schedule", "translator"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
