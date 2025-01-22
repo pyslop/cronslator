@@ -42,7 +42,7 @@ Special characters:
 - `/`: step values
 - `L`: last day of month (only in day of month field)
 
-Examples:
+Supported patterns:
 
 | Natural Language Description | Cron Expression |
 |----------------------------|-----------------|
